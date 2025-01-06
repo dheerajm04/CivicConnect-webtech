@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+  </header>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/logout">Logout</a>
+  </nav>
+  <main>
+    <section>
+      <h2>View Reported Issues</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="adminIssuesTable"></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    async function loadAdminIssues() {
+      const response = await fetch('/api/admin-issues');
+      const issues = await response.json();
+      const tableBody = document.getElementById('adminIssuesTable');
+      tableBody.innerHTML = '';
+      issues.forEach(issue => {
+        tableBody.innerHTML += `
+          <tr>
+            <td>${issue.category}</td>
+            <td>${issue.description}</td>
+            <td>${issue.status}</td>
+            <td>
+              <select id="status-${issue.id}">
+                <option value="Pending" ${issue.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="In Progress" ${issue.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Resolved" ${issue.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+              </select>
+              <button onclick="updateIssue(${issue.id})">Update</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function updateIssue(issueId) {
+      const status = document.getElementById(`status-${issueId}`).value;
+      const response = await fetch(`/api/update-issue/${issueId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      async function fetchIssues() {
+  const category = document.getElementById("filterCategory").value;
+  const status = document.getElementById("filterStatus").value;
+
+  try {
+    const response = await fetch(`/api/admin-issues?category=${category}&status=${status}`);
+    const issues = await response.json();
+    console.log('Fetched Issues:', issues); // Debugging: log the response
+
+    const issuesList = document.getElementById("issues-list");
+    if (issues.length === 0) {
+      issuesList.innerHTML = '<p>No issues found.</p>';
+      return;
+    }
+
+    issuesList.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${issues.map(issue => `
+            <tr>
+              <td>${issue.id}</td>
+              <td>${issue.category}</td>
+              <td>${issue.description}</td>
+              <td>${issue.status}</td>
+              <td>
+                <button onclick="updateStatus(${issue.id}, 'In Progress')">Mark In Progress</button>
+                <button onclick="updateStatus(${issue.id}, 'Resolved')">Mark Resolved</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch (error) {
+    console.error('Error fetching issues:', error);
+  }
+}
+
+
+      const result = await response.json();
+      alert(result.message);
+      if (result.success) loadAdminIssues();
+    }
+
+    loadAdminIssues();
+  </script>
+</body>
+</html>

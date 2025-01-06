@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citizen Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Citizen Dashboard</h1>
+  </header>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/citizen">Citizen</a>
+    <a href="/admin">Admin</a>
+  </nav>
+  <main>
+    <section>
+      <h2>Welcome, Citizen</h2>
+      <form id="loginForm">
+        <h3>Login/Register</h3>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Login/Register</button>
+      </form>
+    </section>
+    <section id="actions" style="display: none;">
+      <button onclick="reportIssue()">Report an Issue</button>
+      <button onclick="trackIssues()">Track Issues</button>
+      <div id="output"></div>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2024 Municipal Corporation</p>
+  </footer>
+  <script>
+    async function reportIssue() {
+      const issue = prompt("Enter issue details:");
+      const category = prompt("Enter issue category:");
+      const response = await fetch('/api/report-issue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ issue, category })
+      });
+      const result = await response.json();
+      alert(result.message);
+    }
+
+    async function trackIssues() {
+      const category = prompt("Enter category to filter issues:");
+      const response = await fetch(`/api/track-issues?category=${category}`);
+      const issues = await response.json();
+      document.getElementById('output').innerHTML = issues.map(
+        issue => `<p>${issue.description} - ${issue.status}</p>`
+      ).join('');
+    }
+  </script>
+</body>
+</html>
